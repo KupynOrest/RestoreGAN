@@ -34,12 +34,12 @@ class MetricCounter:
 
     def loss_message(self):
         metrics = ((k, np.mean(self.metrics[k][-WINDOW_SIZE:])) for k in ('G_loss', 'PSNR', 'SSIM'))
-        return '; '.join(map(lambda x: f'{x[0]}={x[1]:.4f}', metrics))
+        return '; '.join(map(lambda x: '{}={:.4f}'.format(x[0], x[1]), metrics))
 
     def write_to_tensorboard(self, epoch_num, validation=False):
         scalar_prefix = 'Validation' if validation else 'Train'
         for tag in ('G_loss', 'D_loss', 'G_loss_adv', 'G_loss_content', 'SSIM', 'PSNR'):
-            self.writer.add_scalar(f'{scalar_prefix}_{tag}', np.mean(self.metrics[tag]), global_step=epoch_num)
+            self.writer.add_scalar('{}_{}'.format(scalar_prefix, tag), np.mean(self.metrics[tag]), global_step=epoch_num)
         for tag in self.images:
             imgs = self.images[tag]
             if imgs:

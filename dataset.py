@@ -21,9 +21,9 @@ def subsample(data: Iterable, bounds: Tuple[float, float], hash_fn: Callable, n_
     buckets = split_into_buckets(data, n_buckets=n_buckets, salt=salt, hash_fn=hash_fn)
 
     lower_bound, upper_bound = [x * n_buckets for x in bounds]
-    msg = f'Subsampling buckets from {lower_bound} to {upper_bound}, total buckets number is {n_buckets}'
+    msg = 'Subsampling buckets from {} to {}, total buckets number is {}'.format(lower_bound, upper_bound, n_buckets)
     if salt:
-        msg += f'; salt is {salt}'
+        msg += '; salt is {}'.format(salt)
     if verbose:
         logger.info(msg)
     return np.array([sample for bucket, sample in zip(buckets, data) if lower_bound <= bucket < upper_bound])
@@ -32,7 +32,7 @@ def subsample(data: Iterable, bounds: Tuple[float, float], hash_fn: Callable, n_
 def hash_from_paths(x: Tuple[str, str], salt: str = '') -> str:
     path_a, path_b = x
     names = ''.join(map(os.path.basename, (path_a, path_b)))
-    return sha1(f'{names}_{salt}'.encode()).hexdigest()
+    return sha1('{}_{}'.format(names, salt).encode()).hexdigest()
 
 
 def split_into_buckets(data: Iterable, n_buckets: int, hash_fn: Callable, salt=''):
@@ -43,7 +43,7 @@ def split_into_buckets(data: Iterable, n_buckets: int, hash_fn: Callable, salt='
 def _read_img(x: str):
     img = cv2.imread(x)
     if img is None:
-        logger.warning(f'Can not read image {x} with OpenCV, switching to scikit-image')
+        logger.warning('Can not read image {} with OpenCV, switching to scikit-image'.format(x))
         img = imread(x)
     return img
 
@@ -68,7 +68,8 @@ class PairedDataset(Dataset):
         self.corrupt_fn = corrupt_fn
         self.transform_fn = transform_fn
         self.normalize_fn = normalize_fn
-        logger.info(f'Dataset has been created with {len(self.data_a)} samples')
+        logger.info('Dataset has been created with {} samples'.format(len(self.data_a)))
+
 
         if preload:
             preload_fn = partial(self._bulk_preload, preload_size=preload_size)
@@ -92,7 +93,7 @@ class PairedDataset(Dataset):
             w_scale = preload_size / w
             scale = max(h_scale, w_scale)
             img = cv2.resize(img, fx=scale, fy=scale, dsize=None)
-            assert min(img.shape[:2]) >= preload_size, f'weird img shape: {img.shape}'
+            assert min(img.shape[:2]) >= preload_size, 'weird img shape: {}'.format(img.shape)
         return img
 
     def _preprocess(self, img, res):

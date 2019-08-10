@@ -3,8 +3,8 @@ project: deblur_gan
 experiment_desc: fpn
 
 train:
-  files_a: &FILES_A /datasets/my_dataset/**/*.jpg
-  files_b: *FILES_A
+  files_a: &FILES_A /home/charles/Data/Restore_Dataset_3840FPS_AVG_3-21/train/blur/*/*.png #smth like that for glob
+  files_b: &FILES_B /home/charles/Data/Restore_Dataset_3840FPS_AVG_3-21/train/sharp/*/*.png #smth like that for glob
   size: &SIZE 256
   crop: random
   preload: &PRELOAD false
@@ -20,16 +20,14 @@ train:
     - name: jpeg
       quality_lower: 70
       quality_upper: 90
-    - name: motion_blur
-    - name: median_blur
     - name: gamma
     - name: rgb_shift
     - name: hsv_shift
     - name: sharpen
 
 val:
-  files_a: *FILES_A
-  files_b: *FILES_A
+  files_a: *FILES_A /home/charles/Data/Restore_Dataset_3840FPS_AVG_3-21/test/blur/*/*.png #smth like that for glob
+  files_b: *FILES_B /home/charles/Data/Restore_Dataset_3840FPS_AVG_3-21/test/sharp/*/*.png #smth like that for glob
   size: *SIZE
   scope: geometric
   crop: center
@@ -53,8 +51,8 @@ model:
   dropout: True
 
 num_epochs: 200
-train_batches_per_epoch: 1000
-val_batches_per_epoch: 100
+train_batches_per_epoch: 10000
+val_batches_per_epoch: 1000
 batch_size: 1
 image_size: [256, 256]
 
