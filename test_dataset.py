@@ -48,6 +48,7 @@ class AugTest(unittest.TestCase):
                             config['preload'] = preload
                             config['preload_size'] = preload_size
                             config['verbose'] = False
+                            config['corrupt'] = None
                             dataset = PairedDataset.from_config(config)
                             yield dataset
 
