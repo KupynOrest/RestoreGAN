@@ -25,7 +25,8 @@ class Predictor:
         # it's not a bug
         self.normalize_fn = get_normalize()
 
-    def _array_to_batch(self, x):
+    @staticmethod
+    def _array_to_batch(x):
         x = np.transpose(x, (2, 0, 1))
         x = np.expand_dims(x, 0)
         return torch.from_numpy(x)
@@ -51,28 +52,33 @@ class Predictor:
 
         return map(self._array_to_batch, (x, mask)), h, w
 
-    def _postprocess(self, x: torch.Tensor) -> np.ndarray:
+    @staticmethod
+    def _postprocess(x: torch.Tensor) -> np.ndarray:
         x, = x
         x = x.detach().cpu().float().numpy()
         x = (np.transpose(x, (1, 2, 0)) + 1) / 2.0 * 255.0
         return x.astype('uint8')
 
-    def __call__(self, img: np.ndarray, mask: Optional[np.ndarray]) -> np.ndarray:
+    def __call__(self, img: np.ndarray, mask: Optional[np.ndarray], ignore_mask=True) -> np.ndarray:
         (img, mask), h, w = self._preprocess(img, mask)
         with torch.no_grad():
-            pred = self.model(img.cuda(), mask.cuda())
+            inputs = [img.cuda()]
+            if not ignore_mask:
+                inputs += [mask]
+            pred = self.model(*inputs)
         return self._postprocess(pred)[:h, :w, :]
 
 
-def main(img_pattern,
-         mask_pattern,
+def main(img_pattern: str,
+         mask_pattern: Optional[str] = None,
          weights_path='best_fpn.h5',
          out_dir='submit/'
          ):
     def sorted_glob(pattern):
         return sorted(glob(pattern))
 
-    imgs, masks = map(sorted_glob, (img_pattern, mask_pattern))
+    imgs = sorted_glob(img_pattern)
+    masks = sorted_glob(mask_pattern) if mask_pattern is not None else [None for _ in imgs]
     pairs = zip(imgs, masks)
     names = sorted([os.path.basename(x) for x in glob(img_pattern)])
     predictor = Predictor(weights_path=weights_path)
