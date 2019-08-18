@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Optional
 
 import albumentations as albu
 
@@ -77,7 +77,9 @@ def _resolve_aug_fn(name):
     return d[name]
 
 
-def get_corrupt_function(config: List[dict]):
+def get_corrupt_function(config: Optional[List[dict]]):
+    if config is None:
+        return
     augs = []
     for aug_params in config:
         name = aug_params.pop('name')
