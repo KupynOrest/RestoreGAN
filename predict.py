@@ -8,6 +8,7 @@ import torch
 import yaml
 from fire import Fire
 from tqdm import tqdm
+import albumentations as albu
 
 from aug import get_normalize
 from models.networks import get_generator
@@ -32,6 +33,7 @@ class Predictor:
         return torch.from_numpy(x)
 
     def _preprocess(self, x: np.ndarray, mask: Optional[np.ndarray]):
+        x = albu.LongestMaxSize()(image=x)['image']
         x, _ = self.normalize_fn(x, x)
         if mask is None:
             mask = np.ones_like(x, dtype=np.float32)
@@ -87,8 +89,10 @@ def main(img_pattern: str,
     for name, pair in tqdm(zip(names, pairs), total=len(names)):
         f_img, f_mask = pair
         img, mask = map(cv2.imread, (f_img, f_mask))
+        img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
 
         pred = predictor(img, mask)
+        pred = cv2.cvtColor(pred, cv2.COLOR_RGB2BGR)
         cv2.imwrite(os.path.join(out_dir, name),
                     pred)
 

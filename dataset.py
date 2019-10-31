@@ -6,6 +6,7 @@ from hashlib import sha1
 from typing import Callable, Iterable, Optional, Tuple
 
 import cv2
+import imageio
 import numpy as np
 from glog import logger
 from joblib import Parallel, cpu_count, delayed
@@ -41,7 +42,7 @@ def split_into_buckets(data: Iterable, n_buckets: int, hash_fn: Callable, salt='
 
 
 def _read_img(x: str):
-    img = cv2.imread(x)
+    img = imageio.imread(x)
     if img is None:
         logger.warning(f'Can not read image {x} with OpenCV, switching to scikit-image')
         img = imread(x)
@@ -120,7 +121,7 @@ class PairedDataset(Dataset):
         files_a, files_b = map(lambda x: sorted(glob(config[x], recursive=True)), ('files_a', 'files_b'))
         transform_fn = aug.get_transforms(size=config['size'], scope=config['scope'], crop=config['crop'])
         normalize_fn = aug.get_normalize()
-        corrupt_fn = aug.get_corrupt_function(config['corrupt'])
+        corrupt_fn = aug.get_corrupt_function(config.get('corrupt', None))
 
         hash_fn = hash_from_paths
         # ToDo: add more hash functions
